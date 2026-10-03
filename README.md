@@ -148,14 +148,3 @@ Enter Petal Length: 1.4
 Enter Petal Width: 0.2
 Predicted Class: Iris-setosa
 ```
-
----
-
-## Team Responsibilities
-
-| Member | Work Done |
-|--------|-----------|
-| Member 1 | DataPoint, DataSet classes |
-| Member 2 | IDistance, EuclideanDistance, ManhattanDistance |
-| Member 3 | KNNClassifier, predict logic |
-| Member 4 | Evaluator, main.cpp, menu |
