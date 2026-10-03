@@ -16,6 +16,15 @@ bool compareNeighbors(Neighbor n1, Neighbor n2) {
 
 KNNClassifier::KNNClassifier(int kValue) {
     k = kValue;
+    distanceType = "euclidean";
+}
+
+void KNNClassifier::setDistanceType(string type) {
+    distanceType = type;
+}
+
+void KNNClassifier::setK(int kValue) {
+    k = kValue;
 }
 
 void KNNClassifier::fit(DataSet data) {
@@ -29,9 +38,16 @@ double KNNClassifier::calculateDistance(DataPoint a, DataPoint b) {
 
     for(int i = 0; i < f1.size(); i++) {
         double diff = f1[i] - f2[i];
-        sum = sum + (diff * diff);
+        if (distanceType == "manhattan") {
+            sum = sum + abs(diff);
+        } else {
+            sum = sum + (diff * diff); // Default is euclidean
+        }
     }
 
+    if (distanceType == "manhattan") {
+        return sum;
+    }
     return sqrt(sum);
 }
 
