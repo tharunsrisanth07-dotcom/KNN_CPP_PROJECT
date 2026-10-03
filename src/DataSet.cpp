@@ -10,7 +10,7 @@ void DataSet::addPoint(DataPoint point) {
 
 DataPoint DataSet::getPoint(int index) {
     if (index < 1 || index > points.size()) {
-        throw out_of_range("Error: DataPoint index out of bounds.");
+        throw out_of_range("Invalid index");
     }
     return points[index - 1];
 }
