@@ -1,5 +1,6 @@
 #include "DataSet.h"
 #include <cstdlib>
+#include <stdexcept>
 
 using namespace std;
 
@@ -8,6 +9,9 @@ void DataSet::addPoint(DataPoint point) {
 }
 
 DataPoint DataSet::getPoint(int index) {
+    if (index < 1 || index > points.size()) {
+        throw out_of_range("Error: DataPoint index out of bounds.");
+    }
     return points[index - 1];
 }
 
