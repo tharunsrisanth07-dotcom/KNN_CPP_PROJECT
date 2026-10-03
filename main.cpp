@@ -15,125 +15,101 @@ int main() {
     bool dataLoaded = false;
     
     while(true) {
-        cout << "\n====================================\n";
-        cout << "        KNN CLASSIFIER MENU         \n";
-        cout << "====================================\n";
-        cout << "1. Load dataset (Iris)\n";
-        cout << "2. View dataset info\n";
-        cout << "3. Choose K (Current: " << kValue << ")\n";
-        cout << "4. Choose distance method (Current: " << distanceType << ")\n";
-        cout << "5. Evaluate model\n";
-        cout << "6. Predict a new point\n";
-        cout << "7. Exit\n";
-        cout << "Enter choice: ";
+        cout << "\n--- KNN Menu ---\n";
+        cout << "1. Load Iris Data\n";
+        cout << "2. Show data info\n";
+        cout << "3. Change K (now " << kValue << ")\n";
+        cout << "4. Change distance (now " << distanceType << ")\n";
+        cout << "5. Test accuracy\n";
+        cout << "6. Predict point\n";
+        cout << "7. Quit\n";
+        cout << "Choice: ";
         
         int choice;
-        if (!(cin >> choice)) {
-            cout << "Invalid input. Exiting.\n";
-            break;
-        }
+        cin >> choice;
         
-        switch(choice) {
-            case 1: {
-                dataset.loadCSV("data/iris.csv");
-                if (dataset.size() > 0) {
-                    dataset.shuffle();
-                    // Split 80% Train, 20% Test
-                    trainSet = DataSet(); // reset
-                    testSet = DataSet(); // reset
-                    dataset.splitTrainTest(0.80, trainSet, testSet);
-                    dataLoaded = true;
-                    cout << "Dataset loaded and split successfully.\n";
-                } else {
-                    cout << "Error loading dataset.\n";
-                }
-                break;
+        if (choice == 1) {
+            dataset.loadCSV("data/iris.csv");
+            if (dataset.size() > 0) {
+                dataset.shuffle();
+                trainSet = DataSet();
+                testSet = DataSet();
+                dataset.splitTrainTest(0.8, trainSet, testSet);
+                dataLoaded = true;
+                cout << "Data loaded okay\n";
+            } else {
+                cout << "Failed to load\n";
             }
-            case 2: {
-                if(!dataLoaded) {
-                    cout << "Please load dataset first.\n";
-                } else {
-                    cout << "Total samples: " << dataset.size() << "\n";
-                    cout << "Training samples: " << trainSet.size() << "\n";
-                    cout << "Testing samples: " << testSet.size() << "\n";
-                }
-                break;
+        } else if (choice == 2) {
+            if(!dataLoaded) {
+                cout << "Load data first\n";
+            } else {
+                cout << "Total: " << dataset.size() << "\n";
+                cout << "Train: " << trainSet.size() << "\n";
+                cout << "Test: " << testSet.size() << "\n";
             }
-            case 3: {
-                cout << "Enter new K value: ";
-                cin >> kValue;
-                cout << "K updated to " << kValue << ".\n";
-                break;
+        } else if (choice == 3) {
+            cout << "New K: ";
+            cin >> kValue;
+            cout << "K is now " << kValue << "\n";
+        } else if (choice == 4) {
+            cout << "1. Euclidean\n";
+            cout << "2. Manhattan\n";
+            cout << "Enter (1/2): ";
+            int distChoice;
+            cin >> distChoice;
+            if(distChoice == 1) {
+                distanceType = "euclidean";
+            } else {
+                distanceType = "manhattan";
             }
-            case 4: {
-                cout << "1. Euclidean\n";
-                cout << "2. Manhattan\n";
-                cout << "Enter choice: ";
-                int distChoice;
-                cin >> distChoice;
-                if(distChoice == 1) {
-                    distanceType = "euclidean";
-                    cout << "Distance method updated to euclidean.\n";
-                } else if (distChoice == 2) {
-                    distanceType = "manhattan";
-                    cout << "Distance method updated to manhattan.\n";
-                } else {
-                    cout << "Invalid choice.\n";
-                }
-                break;
+        } else if (choice == 5) {
+            if(!dataLoaded) {
+                cout << "Load data first\n";
+            } else {
+                cout << "Testing...\n";
+                KNNClassifier knn(kValue);
+                knn.setDistanceType(distanceType);
+                knn.fit(trainSet);
+                
+                Evaluator eval;
+                double acc = eval.calculateAccuracy(testSet, knn);
+                cout << "Accuracy: " << acc * 100 << "%\n";
             }
-            case 5: {
-                if(!dataLoaded) {
-                    cout << "Please load dataset first.\n";
-                } else {
-                    cout << "Evaluating model...\n";
-                    KNNClassifier knn(kValue);
-                    knn.setDistanceType(distanceType);
-                    knn.fit(trainSet);
-                    
-                    Evaluator eval;
-                    double accuracy = eval.calculateAccuracy(testSet, knn);
-                    cout << "Accuracy: " << (accuracy * 100.0) << "%\n";
-                }
-                break;
+        } else if (choice == 6) {
+            if(!dataLoaded) {
+                cout << "Load data first\n";
+            } else {
+                double sl, sw, pl, pw;
+                cout << "Sepal Length: ";
+                cin >> sl;
+                cout << "Sepal Width: ";
+                cin >> sw;
+                cout << "Petal Length: ";
+                cin >> pl;
+                cout << "Petal Width: ";
+                cin >> pw;
+                
+                vector<double> feats;
+                feats.push_back(sl);
+                feats.push_back(sw);
+                feats.push_back(pl);
+                feats.push_back(pw);
+                
+                DataPoint newPoint(feats, "Unknown");
+                
+                KNNClassifier knn(kValue);
+                knn.setDistanceType(distanceType);
+                knn.fit(dataset); 
+                
+                string p = knn.predict(newPoint);
+                cout << "Prediction: " << p << "\n";
             }
-            case 6: {
-                if(!dataLoaded) {
-                    cout << "Please load dataset first.\n";
-                } else {
-                    double sl, sw, pl, pw;
-                    cout << "Enter Sepal Length: ";
-                    cin >> sl;
-                    cout << "Enter Sepal Width: ";
-                    cin >> sw;
-                    cout << "Enter Petal Length: ";
-                    cin >> pl;
-                    cout << "Enter Petal Width: ";
-                    cin >> pw;
-                    
-                    vector<double> feats;
-                    feats.push_back(sl);
-                    feats.push_back(sw);
-                    feats.push_back(pl);
-                    feats.push_back(pw);
-                    
-                    DataPoint newPoint(feats, "Unknown");
-                    
-                    KNNClassifier knn(kValue);
-                    knn.setDistanceType(distanceType);
-                    knn.fit(dataset); // fit on all data for prediction
-                    
-                    string pred = knn.predict(newPoint);
-                    cout << "Predicted Class: " << pred << "\n";
-                }
-                break;
-            }
-            case 7: {
-                cout << "Exiting program.\n";
-                return 0;
-            }
-            default:
-                cout << "Invalid choice.\n";
+        } else if (choice == 7) {
+            cout << "Bye\n";
+            break;
+        } else {
+            cout << "Wrong choice\n";
         }
     }
     return 0;
