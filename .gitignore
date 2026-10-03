@@ -1,6 +1,0 @@
-# Ignore build files
-obj/
-miniknn.exe
-miniknn
-build/
-humanize.py
