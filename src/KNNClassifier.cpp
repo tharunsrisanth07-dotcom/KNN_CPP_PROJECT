@@ -1,6 +1,7 @@
 #include "KNNClassifier.h"
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -8,6 +9,10 @@ struct Neighbor {
     double distance;
     string label;
 };
+
+bool compareNeighbors(Neighbor n1, Neighbor n2) {
+    return n1.distance < n2.distance;
+}
 
 KNNClassifier::KNNClassifier(int kValue) {
     k = kValue;
@@ -43,15 +48,7 @@ string KNNClassifier::predict(DataPoint point) {
         neighbors.push_back(n);
     }
 
-    for(int i = 0; i < neighbors.size(); i++) {
-        for(int j = i + 1; j < neighbors.size(); j++) {
-            if(neighbors[j].distance < neighbors[i].distance) {
-                Neighbor temp = neighbors[i];
-                neighbors[i] = neighbors[j];
-                neighbors[j] = temp;
-            }
-        }
-    }
+    sort(neighbors.begin(), neighbors.end(), compareNeighbors);
 
     int actualK = k;
     if (neighbors.size() < k) {
