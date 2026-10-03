@@ -16,4 +16,5 @@ public:
     
     void shuffle();
     void splitTrainTest(double trainRatio, DataSet& trainSet, DataSet& testSet);
+    void loadCSV(string filename);
 };

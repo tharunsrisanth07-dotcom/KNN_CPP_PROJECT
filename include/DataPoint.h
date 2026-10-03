@@ -14,4 +14,5 @@ public:
     
     vector<double> getFeatures();
     string getLabel();
+    double distanceTo(DataPoint other);
 };

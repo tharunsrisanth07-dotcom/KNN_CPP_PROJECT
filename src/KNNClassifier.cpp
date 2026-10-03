@@ -1,4 +1,6 @@
 #include "KNNClassifier.h"
+#include "EuclideanDistance.h"
+#include "ManhattanDistance.h"
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -16,11 +18,15 @@ bool compareNeighbors(Neighbor n1, Neighbor n2) {
 
 KNNClassifier::KNNClassifier(int kValue) {
     k = kValue;
-    distanceType = "euclidean";
+    metric = make_unique<EuclideanDistance>();
 }
 
 void KNNClassifier::setDistanceType(string type) {
-    distanceType = type;
+    if (type == "manhattan") {
+        metric = make_unique<ManhattanDistance>();
+    } else {
+        metric = make_unique<EuclideanDistance>();
+    }
 }
 
 void KNNClassifier::setK(int kValue) {
@@ -31,32 +37,12 @@ void KNNClassifier::fit(DataSet data) {
     trainingData = data;
 }
 
-double KNNClassifier::calculateDistance(DataPoint a, DataPoint b) {
-    vector<double> f1 = a.getFeatures();
-    vector<double> f2 = b.getFeatures();
-    double sum = 0.0;
-
-    for(int i = 0; i < f1.size(); i++) {
-        double diff = f1[i] - f2[i];
-        if (distanceType == "manhattan") {
-            sum = sum + abs(diff);
-        } else {
-            sum = sum + (diff * diff); // Default is euclidean
-        }
-    }
-
-    if (distanceType == "manhattan") {
-        return sum;
-    }
-    return sqrt(sum);
-}
-
 string KNNClassifier::predict(DataPoint point) {
     vector<Neighbor> neighbors;
 
     for(int i = 1; i <= trainingData.size(); i++) {
         DataPoint trainPoint = trainingData.getPoint(i);
-        double dist = calculateDistance(point, trainPoint);
+        double dist = metric->calculate(point, trainPoint);
 
         Neighbor n;
         n.distance = dist;

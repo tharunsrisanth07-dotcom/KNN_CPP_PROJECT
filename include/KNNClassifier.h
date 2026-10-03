@@ -1,16 +1,16 @@
 #pragma once
 #include "DataSet.h"
+#include "IDistance.h"
 #include <string>
+#include <memory>
 
 using namespace std;
 
 class KNNClassifier {
 private:
     int k;
-    string distanceType;
+    unique_ptr<IDistance> metric;
     DataSet trainingData;
-    
-    double calculateDistance(DataPoint a, DataPoint b);
 
 public:
     KNNClassifier(int kValue);

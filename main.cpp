@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include "CSVLoader.h"
 #include "DataSet.h"
 #include "KNNClassifier.h"
 #include "Evaluator.h"
@@ -8,7 +7,6 @@
 using namespace std;
 
 int main() {
-    CSVLoader loader;
     DataSet dataset;
     DataSet trainSet;
     DataSet testSet;
@@ -37,7 +35,7 @@ int main() {
         
         switch(choice) {
             case 1: {
-                dataset = loader.load("data/iris.csv");
+                dataset.loadCSV("data/iris.csv");
                 if (dataset.size() > 0) {
                     dataset.shuffle();
                     // Split 80% Train, 20% Test
