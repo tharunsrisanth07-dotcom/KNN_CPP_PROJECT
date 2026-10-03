@@ -6,5 +6,5 @@ using namespace std;
 
 class Evaluator {
 public:
-    double calculateAccuracy(DataSet testData, KNNClassifier classifier);
+    double calculateAccuracy(DataSet testData, KNNClassifier& classifier);
 };

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-double Evaluator::calculateAccuracy(DataSet testData, KNNClassifier classifier) {
+double Evaluator::calculateAccuracy(DataSet testData, KNNClassifier& classifier) {
     if(testData.size() == 0) return 0.0;
 
     int correct = 0;
