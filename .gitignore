@@ -4,3 +4,5 @@ miniknn.exe
 miniknn
 build/
 humanize.py
+*.o
+input.txt

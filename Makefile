@@ -1,29 +1,32 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -I include
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -Iinclude
 
-SRC_DIR = src
-OBJ_DIR = obj
+SRCS = src/DataPoint.cpp \
+       src/DataSet.cpp \
+       src/CSVLoader.cpp \
+       src/EuclideanDistance.cpp \
+       src/ManhattanDistance.cpp \
+       src/MinkowskiDistance.cpp \
+       src/StandardScaler.cpp \
+       src/MinMaxScaler.cpp \
+       src/KNNClassifier.cpp \
+       src/Evaluator.cpp \
+       src/CrossValidator.cpp \
+       src/ModelSelector.cpp \
+       src/PredictionService.cpp \
+       main.cpp
 
-SRCS = $(wildcard $(SRC_DIR)/*.cpp)
-OBJS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS)) $(OBJ_DIR)/main.o
+OBJS = $(SRCS:.cpp=.o)
 
 TARGET = miniknn
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJ_DIR)/main.o: main.cpp | $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -rf $(OBJ_DIR) $(TARGET) $(TARGET).exe
-
-.PHONY: all clean
+	rm -f $(OBJS) $(TARGET)
