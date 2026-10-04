@@ -78,8 +78,15 @@ PredictionService ──> IDistance
 
 ## How to Compile & Run
 
+**Linux / Mac:**
 ```bash
 make
+./miniknn
+```
+
+**Windows (no make):**
+```powershell
+g++ -std=c++17 -Iinclude src/*.cpp main.cpp -o miniknn
 ./miniknn
 ```
 
