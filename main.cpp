@@ -1,115 +1,113 @@
+#include "CSVLoader.h"
+#include "ModelSelector.h"
+#include "PredictionService.h"
 #include <iostream>
 #include <string>
-#include "DataSet.h"
-#include "KNNClassifier.h"
-#include "Evaluator.h"
+#include <limits>
 
-using namespace std;
+void displayMenu() {
+    std::cout << "\n====================================\n";
+    std::cout << "        MINI KNN CLASSIFIER\n";
+    std::cout << "====================================\n";
+    std::cout << "1. Load Dataset\n";
+    std::cout << "2. View Dataset Information\n";
+    std::cout << "3. Run Cross Validation & Select Best Model\n";
+    std::cout << "4. Train Final Model\n";
+    std::cout << "5. Predict New Point\n";
+    std::cout << "6. Exit\n";
+    std::cout << "Select an option: ";
+}
 
 int main() {
-    DataSet dataset;
-    DataSet trainSet;
-    DataSet testSet;
-    int kValue = 5;
-    string distanceType = "euclidean";
-    bool dataLoaded = false;
-    
-    while(true) {
-        cout << "\n--- KNN Menu ---\n";
-        cout << "1. Load Iris Data\n";
-        cout << "2. Show data info\n";
-        cout << "3. Change K (now " << kValue << ")\n";
-        cout << "4. Change distance (now " << distanceType << ")\n";
-        cout << "5. Test accuracy\n";
-        cout << "6. Predict point\n";
-        cout << "7. Quit\n";
-        cout << "Choice: ";
-        
-        int choice;
-        cin >> choice;
-        
+    DataSet mainDataset;
+    bool datasetLoaded = false;
+    ModelConfig bestConfig = {5, "euclidean", "standard", false}; // Default config
+    bool hasBestConfig = false;
+    PredictionService predictionService;
+
+    int choice;
+    while (true) {
+        displayMenu();
+        if (!(std::cin >> choice)) {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid input. Please enter a number.\n";
+            continue;
+        }
+
         if (choice == 1) {
-            dataset.loadCSV("data/iris.csv");
-            if (dataset.size() > 0) {
-                dataset.shuffle();
-                trainSet = DataSet();
-                testSet = DataSet();
-                dataset.splitTrainTest(0.8, trainSet, testSet);
-                dataLoaded = true;
-                cout << "Data loaded okay\n";
+            std::string filename;
+            std::cout << "Enter dataset filename (e.g., data/iris.csv): ";
+            std::cin >> filename;
+            CSVLoader loader;
+            mainDataset = loader.load(filename);
+            if (mainDataset.size() > 0) {
+                std::cout << "Dataset loaded successfully with " << mainDataset.size() << " points.\n";
+                datasetLoaded = true;
             } else {
-                cout << "Failed to load\n";
+                std::cout << "Failed to load dataset or dataset is empty.\n";
             }
         } else if (choice == 2) {
-            if(!dataLoaded) {
-                cout << "Load data first\n";
+            if (!datasetLoaded) {
+                std::cout << "Please load a dataset first (Option 1).\n";
             } else {
-                cout << "Total: " << dataset.size() << "\n";
-                cout << "Train: " << trainSet.size() << "\n";
-                cout << "Test: " << testSet.size() << "\n";
+                std::cout << "Dataset Size: " << mainDataset.size() << " points.\n";
+                if (mainDataset.size() > 0) {
+                    std::cout << "Number of features: " << mainDataset.getPoint(0).getFeatures().size() << "\n";
+                }
             }
         } else if (choice == 3) {
-            cout << "New K: ";
-            cin >> kValue;
-            cout << "K is now " << kValue << "\n";
-        } else if (choice == 4) {
-            cout << "1. Euclidean\n";
-            cout << "2. Manhattan\n";
-            cout << "Enter (1/2): ";
-            int distChoice;
-            cin >> distChoice;
-            if(distChoice == 1) {
-                distanceType = "euclidean";
+            if (!datasetLoaded) {
+                std::cout << "Please load a dataset first (Option 1).\n";
             } else {
-                distanceType = "manhattan";
+                ModelSelector selector;
+                bestConfig = selector.findBestModel(mainDataset);
+                hasBestConfig = true;
+            }
+        } else if (choice == 4) {
+            if (!datasetLoaded) {
+                std::cout << "Please load a dataset first (Option 1).\n";
+            } else if (!hasBestConfig) {
+                std::cout << "Please run Cross Validation first (Option 3) to find the best configuration.\n";
+            } else {
+                predictionService.trainFinalModel(mainDataset, bestConfig);
             }
         } else if (choice == 5) {
-            if(!dataLoaded) {
-                cout << "Load data first\n";
+            if (!predictionService.getIsTrained()) {
+                std::cout << "Please train the final model first (Option 4).\n";
             } else {
-                cout << "Testing...\n";
-                KNNClassifier knn(kValue);
-                knn.setDistanceType(distanceType);
-                knn.fit(trainSet);
-                
-                Evaluator eval;
-                double acc = eval.calculateAccuracy(testSet, knn);
-                cout << "Accuracy: " << acc * 100 << "%\n";
+                std::cout << "Enter 4 feature values separated by space (e.g., 5.1 3.5 1.4 0.2): \n";
+                double f1, f2, f3, f4;
+                if (std::cin >> f1 >> f2 >> f3 >> f4) {
+                    std::vector<double> features = {f1, f2, f3, f4};
+                    DataPoint newPoint(features, "Unknown");
+                    
+                    std::cout << "\n---------------------------------\n";
+                    std::cout << "FINAL MODEL\n";
+                    std::cout << "---------------------------------\n";
+                    ModelConfig currentConfig = predictionService.getConfig();
+                    std::cout << "K: " << currentConfig.k << "\n";
+                    std::cout << "Distance: " << currentConfig.distanceType << "\n";
+                    std::cout << "Scaling: " << currentConfig.scalerType << "\n";
+                    std::cout << "Weighted: " << (currentConfig.weighted ? "Yes" : "No") << "\n";
+                    std::cout << "\n---------------------------------\n";
+                    std::cout << "PREDICTION\n";
+                    std::cout << "---------------------------------\n";
+                    
+                    std::string prediction = predictionService.predictNewPoint(newPoint);
+                    std::cout << "Predicted Class: " << prediction << "\n";
+                    std::cout << "---------------------------------\n";
+                } else {
+                    std::cin.clear();
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    std::cout << "Invalid input. Please enter valid numbers.\n";
+                }
             }
         } else if (choice == 6) {
-            if(!dataLoaded) {
-                cout << "Load data first\n";
-            } else {
-                double sl, sw, pl, pw;
-                cout << "Sepal Length: ";
-                cin >> sl;
-                cout << "Sepal Width: ";
-                cin >> sw;
-                cout << "Petal Length: ";
-                cin >> pl;
-                cout << "Petal Width: ";
-                cin >> pw;
-                
-                vector<double> feats;
-                feats.push_back(sl);
-                feats.push_back(sw);
-                feats.push_back(pl);
-                feats.push_back(pw);
-                
-                DataPoint newPoint(feats, "Unknown");
-                
-                KNNClassifier knn(kValue);
-                knn.setDistanceType(distanceType);
-                knn.fit(dataset); 
-                
-                string p = knn.predict(newPoint);
-                cout << "Prediction: " << p << "\n";
-            }
-        } else if (choice == 7) {
-            cout << "Bye\n";
+            std::cout << "Exiting program. Goodbye!\n";
             break;
         } else {
-            cout << "Wrong choice\n";
+            std::cout << "Invalid option. Please try again.\n";
         }
     }
     return 0;

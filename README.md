@@ -1,111 +1,74 @@
-# KNN Classifier - C++ Project
+# MiniKNN: K-Nearest Neighbours Classifier Library
 
-## What is this project?
+## 1. Project Title
+MiniKNN: A Custom C++ implementation of the K-Nearest Neighbours (KNN) classification algorithm.
 
-This is a K-Nearest Neighbours (KNN) classifier built from scratch in C++. We used the Iris flower dataset which has 150 samples. The program lets you load the data, pick K, choose a distance method, evaluate accuracy, and predict a flower species from your own input.
+## 2. Problem Statement
+This project demonstrates how to build a Machine Learning pipeline in standard C++17 from scratch, without external dependencies like scikit-learn or OpenCV. It solves the problem of classifying data points into categories based on nearest neighbors.
 
----
+## 3. What is KNN
+K-Nearest Neighbours is a simple, intuitive machine learning algorithm. It classifies a new data point based on the majority class of its 'K' closest neighbors in the training dataset.
 
-## How KNN Works
+## 4. How KNN works
+- Calculate the distance between the test point and all training points.
+- Sort the distances.
+- Select the first K nearest points.
+- Find the most frequent class among these K points (or use weighted voting).
 
-1. Load all the training data points.
-2. For a new point, calculate the distance to every training point.
-3. Sort all training points from closest to farthest.
-4. Take the top K closest points.
-5. Look at what class label appears most among those K points.
-6. That label is the prediction.
+## 5. Architecture
+The project follows a strong Object-Oriented design with several layers:
+- Data Layer: Manages datasets and parsing (DataSet, DataPoint, CSVLoader).
+- Distance Layer: Handles distance metrics (Euclidean, Manhattan).
+- Scaling Layer: Handles feature normalization (StandardScaler, MinMaxScaler).
+- ML Layer: The core KNN algorithm.
+- Evaluation Layer: Performs cross-validation and selects the best model.
+- App Layer: Handles user prediction.
 
----
+## 6. Class Responsibilities
+- `DataPoint`: Represents a single row in the dataset.
+- `DataSet`: A collection of DataPoints.
+- `CSVLoader`: Parses CSV files to create a DataSet.
+- `IDistance`: Abstract interface for distances.
+- `IScaler`: Abstract interface for scaling.
+- `KNNClassifier`: Core prediction algorithm.
+- `CrossValidator`: Performs K-Fold cross validation.
+- `ModelSelector`: Selects the best hyperparameter configuration.
+- `PredictionService`: Handles end-to-end user prediction.
 
-## Project Structure
+## 7. Distance Metrics
+The project supports Euclidean and Manhattan distance.
 
-Header files (`.h`) are in the `include/` folder and implementation files (`.cpp`) are in the `src/` folder.
+## 8. Feature Scaling
+Features are scaled using either Standard scaling (mean 0, std dev 1) or Min-Max scaling ([0, 1] range) to ensure all features contribute equally.
 
-| File | What it does |
-|------|-------------|
-| `DataPoint.h / .cpp` | Stores one row of data (4 numbers + a label) |
-| `DataSet.h / .cpp` | Stores all DataPoints, handles shuffle, split, and CSV loading |
-| `IDistance.h` | Abstract base class for distance methods |
-| `EuclideanDistance.h / .cpp` | Euclidean distance formula |
-| `ManhattanDistance.h / .cpp` | Manhattan distance formula |
-| `KNNClassifier.h / .cpp` | The main KNN algorithm (fit + predict) |
-| `Evaluator.h / .cpp` | Tests the model and calculates accuracy |
-| `main.cpp` | Menu-based interface to run everything |
+## 9. Weighted KNN
+Optionally gives closer neighbors more weight using `weight = 1 / (distance + epsilon)`.
 
+## 10. Cross-validation
+Uses Stratified 5-Fold Cross Validation. The dataset is split into 5 equal parts. The model is trained on 4 parts and validated on the remaining 1 part, repeating this 5 times.
 
+## 11. Model selection
+Tests 36 configurations (combinations of K, distance metrics, scalers, and weights) and selects the one with the highest average CV accuracy.
 
-## Dataset
+## 12. Final prediction pipeline
+The best configuration is used to train a final model on the entire dataset. When a user inputs a new point, the same scaler is applied, and the final KNN model makes the prediction.
 
-**Iris Dataset** - 150 rows, 4 features per row, 3 classes:
-- Features: Sepal Length, Sepal Width, Petal Length, Petal Width
-- Classes: Iris-setosa, Iris-versicolor, Iris-virginica
-
-We split it 80% training (120 samples) and 20% testing (30 samples).
-
----
-
-## How to Compile
-
-Make sure you are in the project folder, then run:
-
-```
-g++ -Iinclude main.cpp src/*.cpp -o miniknn
-```
-
-Or just use:
-
-```
+## 13. How to compile
+Use the provided Makefile:
+```sh
 make
 ```
 
----
-
-## How to Run
-
-On Linux / Mac:
-```
+## 14. How to run
+```sh
 ./miniknn
 ```
 
-On Windows:
-```
-miniknn.exe
-```
-
----
-
-## Menu Options
-
-```
+## 15. Example Output
+```text
 ====================================
-        KNN CLASSIFIER MENU
+        MINI KNN CLASSIFIER
 ====================================
-1. Load dataset (Iris)
-2. View dataset info
-3. Choose K
-4. Choose distance method (Euclidean / Manhattan)
-5. Evaluate model
-6. Predict a new point
-7. Exit
+1. Load Dataset
+...
 ```
-
----
-
-## Sample Output
-
-```
-Enter choice: 1
-Dataset loaded and split successfully.
-
-Enter choice: 5
-Evaluating model...
-Accuracy: 93.3333%
-
-Enter choice: 6
-Enter Sepal Length: 5.1
-Enter Sepal Width: 3.5
-Enter Petal Length: 1.4
-Enter Petal Width: 0.2
-Predicted Class: Iris-setosa
-```
-

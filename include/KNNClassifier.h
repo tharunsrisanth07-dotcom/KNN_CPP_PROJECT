@@ -2,21 +2,20 @@
 #include "DataSet.h"
 #include "IDistance.h"
 #include <string>
-#include <memory>
 
-using namespace std;
-
+// Problem: Implements the K-Nearest Neighbors logic
+// Data Members: k, distanceMetric, weighted flag, training data
+// Methods: fit(dataset), predict(datapoint)
+// Used by: CrossValidator, PredictionService
 class KNNClassifier {
 private:
     int k;
-    unique_ptr<IDistance> metric;
+    IDistance* distanceMetric;
+    bool weighted;
     DataSet trainingData;
 
 public:
-    KNNClassifier(int kValue);
-    
-    void setDistanceType(string type);
-    void setK(int kValue);
-    void fit(DataSet data);
-    string predict(DataPoint point);
+    KNNClassifier(int k, IDistance* distanceMetric, bool weighted = false);
+    void fit(const DataSet& data);
+    std::string predict(const DataPoint& point) const;
 };

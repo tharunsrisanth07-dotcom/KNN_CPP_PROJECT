@@ -1,16 +1,16 @@
 #include "ManhattanDistance.h"
 #include <cmath>
-#include <vector>
+#include <algorithm>
 
-using namespace std;
-
-double ManhattanDistance::calculate(DataPoint a, DataPoint b) {
-    vector<double> f1 = a.getFeatures();
-    vector<double> f2 = b.getFeatures();
+double ManhattanDistance::calculate(const DataPoint& a, const DataPoint& b) const {
     double sum = 0.0;
-    for(int i = 0; i < f1.size(); i++) {
-        double diff = f1[i] - f2[i];
-        sum += abs(diff);
+    const auto& f1 = a.getFeatures();
+    const auto& f2 = b.getFeatures();
+    
+    size_t minSize = std::min(f1.size(), f2.size());
+    for (size_t i = 0; i < minSize; ++i) {
+        sum += std::abs(f1[i] - f2[i]);
     }
+    
     return sum;
 }

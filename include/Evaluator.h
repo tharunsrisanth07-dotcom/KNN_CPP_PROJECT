@@ -1,10 +1,13 @@
 #pragma once
-#include "DataSet.h"
-#include "KNNClassifier.h"
+#include <vector>
+#include <string>
+#include <map>
 
-using namespace std;
-
+// Problem: Measures performance of predictions
+// Methods: calculateAccuracy, printConfusionMatrix
+// Used by: CrossValidator, main
 class Evaluator {
 public:
-    double calculateAccuracy(DataSet testData, KNNClassifier& classifier);
+    double calculateAccuracy(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const;
+    void printConfusionMatrix(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const;
 };
