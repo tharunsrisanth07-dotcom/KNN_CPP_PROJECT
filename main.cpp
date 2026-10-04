@@ -98,8 +98,18 @@ int main() {
             
         } else if (choice == 3) {
             cout << "Enter new K value: ";
-            cin >> manualK;
-            cout << "K set to " << manualK << ".\n";
+            int newK;
+            cin >> newK;
+            if (cin.fail() || newK <= 0 || newK % 2 == 0) {
+                if (cin.fail()) {
+                    cin.clear();
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                }
+                cout << "Invalid K value. It must be a positive odd number.\n";
+            } else {
+                manualK = newK;
+                cout << "K set to " << manualK << ".\n";
+            }
             
         } else if (choice == 4) {
             cout << "Available distances: euclidean, manhattan, minkowski\n";
