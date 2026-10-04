@@ -1,18 +1,17 @@
 #include "MinkowskiDistance.h"
 #include <cmath>
-#include <algorithm>
+using namespace std;
 
-MinkowskiDistance::MinkowskiDistance(double p) : p(p) {}
+MinkowskiDistance::MinkowskiDistance(double p) {
+    this->p = p;
+}
 
-double MinkowskiDistance::calculate(const DataPoint& a, const DataPoint& b) const {
+double MinkowskiDistance::calculate(DataPoint a, DataPoint b) {
     double sum = 0.0;
-    const auto& f1 = a.getFeatures();
-    const auto& f2 = b.getFeatures();
-    
-    size_t minSize = std::min(f1.size(), f2.size());
-    for (size_t i = 0; i < minSize; ++i) {
-        sum += std::pow(std::abs(f1[i] - f2[i]), p);
+    vector<double> f1 = a.getFeatures();
+    vector<double> f2 = b.getFeatures();
+    for (int i = 0; i < f1.size(); i++) {
+        sum += pow(abs(f1[i] - f2[i]), p);
     }
-    
-    return std::pow(sum, 1.0 / p);
+    return pow(sum, 1.0 / p);
 }

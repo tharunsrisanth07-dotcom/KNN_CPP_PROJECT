@@ -5,21 +5,27 @@
 #include "ManhattanDistance.h"
 #include "MinkowskiDistance.h"
 #include <iostream>
+using namespace std;
 
-PredictionService::PredictionService() : finalScaler(nullptr), finalDistance(nullptr), finalKNN(nullptr), isTrained(false) {}
-
-PredictionService::~PredictionService() {
-    if (finalScaler) delete finalScaler;
-    if (finalDistance) delete finalDistance;
-    if (finalKNN) delete finalKNN;
+PredictionService::PredictionService() {
+    finalScaler = nullptr;
+    finalDistance = nullptr;
+    finalKNN = nullptr;
+    isTrained = false;
 }
 
-void PredictionService::trainFinalModel(const DataSet& allData, const ModelConfig& bestConfig) {
+PredictionService::~PredictionService() {
+    if (finalScaler != nullptr) delete finalScaler;
+    if (finalDistance != nullptr) delete finalDistance;
+    if (finalKNN != nullptr) delete finalKNN;
+}
+
+void PredictionService::trainFinalModel(DataSet allData, ModelConfig bestConfig) {
     config = bestConfig;
-    
-    if (finalScaler) { delete finalScaler; finalScaler = nullptr; }
-    if (finalDistance) { delete finalDistance; finalDistance = nullptr; }
-    if (finalKNN) { delete finalKNN; finalKNN = nullptr; }
+
+    if (finalScaler != nullptr) { delete finalScaler; finalScaler = nullptr; }
+    if (finalDistance != nullptr) { delete finalDistance; finalDistance = nullptr; }
+    if (finalKNN != nullptr) { delete finalKNN; finalKNN = nullptr; }
 
     DataSet trainingData = allData;
 
@@ -29,10 +35,10 @@ void PredictionService::trainFinalModel(const DataSet& allData, const ModelConfi
         finalScaler = new MinMaxScaler();
     }
 
-    if (finalScaler) {
+    if (finalScaler != nullptr) {
         finalScaler->fit(trainingData);
         DataSet scaledTrain;
-        for (size_t i = 0; i < trainingData.size(); ++i) {
+        for (int i = 0; i < trainingData.size(); i++) {
             scaledTrain.addPoint(finalScaler->transform(trainingData.getPoint(i)));
         }
         trainingData = scaledTrain;
@@ -46,25 +52,22 @@ void PredictionService::trainFinalModel(const DataSet& allData, const ModelConfi
     finalKNN = new KNNClassifier(config.k, finalDistance, config.weighted);
     finalKNN->fit(trainingData);
     isTrained = true;
-    
-    std::cout << "Final model trained successfully on all " << allData.size() << " data points.\n";
+
+    cout << "Model trained on all " << allData.size() << " data points. Ready to predict!\n";
 }
 
-std::string PredictionService::predictNewPoint(const DataPoint& point) const {
-    if (!isTrained) return "Model not trained yet.";
-
+string PredictionService::predictNewPoint(DataPoint point) {
     DataPoint processPoint = point;
-    if (finalScaler) {
+    if (finalScaler != nullptr) {
         processPoint = finalScaler->transform(point);
     }
-    
     return finalKNN->predict(processPoint);
 }
 
-bool PredictionService::getIsTrained() const {
+bool PredictionService::getIsTrained() {
     return isTrained;
 }
 
-ModelConfig PredictionService::getConfig() const {
+ModelConfig PredictionService::getConfig() {
     return config;
 }

@@ -14,13 +14,16 @@ classDiagram
 
     class DataSet {
         - vector~DataPoint~ points
-        + addPoint(point: DataPoint) void
+        + addPoint(p: DataPoint) void
         + getPoint(index: int) DataPoint
         + size() int
         + getPoints() vector~DataPoint~
-        + shuffle() void
-        + splitTrainTest(ratio: double, train: DataSet, test: DataSet) void
-        + loadCSV(filename: string) void
+        + shuffle(seed: int) void
+        + splitTrainTest(train: DataSet, test: DataSet, ratio: double) void
+    }
+
+    class CSVLoader {
+        + load(filename: string) DataSet
     }
 
     class IDistance {
@@ -36,28 +39,108 @@ classDiagram
         + calculate(a: DataPoint, b: DataPoint) double
     }
 
+    class MinkowskiDistance {
+        - double p
+        + MinkowskiDistance(p: double)
+        + calculate(a: DataPoint, b: DataPoint) double
+    }
+
+    class IScaler {
+        <<abstract>>
+        + fit(data: DataSet) void
+        + transform(point: DataPoint) DataPoint
+    }
+
+    class StandardScaler {
+        - vector~double~ mean
+        - vector~double~ stdDev
+        + fit(data: DataSet) void
+        + transform(point: DataPoint) DataPoint
+    }
+
+    class MinMaxScaler {
+        - vector~double~ minValues
+        - vector~double~ maxValues
+        + fit(data: DataSet) void
+        + transform(point: DataPoint) DataPoint
+    }
+
     class KNNClassifier {
         - int k
-        - unique_ptr~IDistance~ metric
+        - IDistance* distanceMetric
+        - bool weighted
         - DataSet trainingData
-        + KNNClassifier(k: int)
-        + setK(k: int) void
-        + setDistanceType(type: string) void
+        + KNNClassifier(k: int, metric: IDistance*, weighted: bool)
         + fit(data: DataSet) void
         + predict(point: DataPoint) string
     }
 
     class Evaluator {
-        + calculateAccuracy(testData: DataSet, classifier: KNNClassifier) double
+        + calculateAccuracy(actual: vector~string~, predicted: vector~string~) double
+        + printConfusionMatrix(actual: vector~string~, predicted: vector~string~) void
+        + printPrecision(actual: vector~string~, predicted: vector~string~) void
+        + printRecall(actual: vector~string~, predicted: vector~string~) void
+        + printF1Score(actual: vector~string~, predicted: vector~string~) void
+    }
+
+    class ModelConfig {
+        + int k
+        + string distanceType
+        + string scalerType
+        + bool weighted
+    }
+
+    class ModelResult {
+        + ModelConfig config
+        + vector~double~ foldAccuracies
+        + double averageAccuracy
+    }
+
+    class CrossValidator {
+        + evaluate(data: DataSet, config: ModelConfig, folds: int) ModelResult
+    }
+
+    class ModelSelector {
+        + findBestModel(data: DataSet) ModelConfig
+    }
+
+    class PredictionService {
+        - ModelConfig config
+        - IScaler* finalScaler
+        - IDistance* finalDistance
+        - KNNClassifier* finalKNN
+        - bool isTrained
+        + trainFinalModel(data: DataSet, config: ModelConfig) void
+        + predictNewPoint(point: DataPoint) string
+        + getIsTrained() bool
+        + getConfig() ModelConfig
     }
 
     DataSet "1" o-- "many" DataPoint : contains
-    IDistance <|-- EuclideanDistance : implements
-    IDistance <|-- ManhattanDistance : implements
+    CSVLoader --> DataSet : creates
+
+    IDistance <|-- EuclideanDistance : inherits
+    IDistance <|-- ManhattanDistance : inherits
+    IDistance <|-- MinkowskiDistance : inherits
+
+    IScaler <|-- StandardScaler : inherits
+    IScaler <|-- MinMaxScaler : inherits
+
     KNNClassifier --> IDistance : uses
     KNNClassifier o-- DataSet : stores training data
-    Evaluator --> KNNClassifier : calls predict
-    Evaluator --> DataSet : loops test points
+
+    CrossValidator --> KNNClassifier : creates and uses
+    CrossValidator --> Evaluator : uses
+    CrossValidator --> IScaler : uses
+    CrossValidator --> ModelConfig : takes as input
+    CrossValidator --> ModelResult : returns
+
+    ModelSelector --> CrossValidator : calls evaluate
+    ModelSelector --> ModelConfig : returns best
+
+    PredictionService --> KNNClassifier : owns
+    PredictionService --> IScaler : owns
+    PredictionService --> IDistance : owns
 ```
 
 ---
@@ -69,34 +152,56 @@ flowchart TD
     A([Start]) --> B[Show Menu]
     B --> C{User Choice}
 
-    C -->|1| D[Load iris.csv into DataSet]
-    D --> E[Shuffle DataSet]
-    E --> F[Split 80% Train / 20% Test]
+    C -->|1 - Load Dataset| D[CSVLoader reads data/iris.csv]
+    D --> E[DataSet is filled with DataPoints]
+    E --> B
+
+    C -->|2 - View Info| F[Print dimensions and first 5 rows]
     F --> B
-
-    C -->|2| G[Print total, train, test count]
+    
+    C -->|3 - Select K| G[Read new K from user]
     G --> B
-
-    C -->|3| H[Read new K from user]
+    
+    C -->|4 - Select Distance| H[Read distance method from user]
     H --> B
 
-    C -->|4| I{Distance Choice}
-    I -->|Euclidean| J[set metric = EuclideanDistance]
-    I -->|Manhattan| K[set metric = ManhattanDistance]
-    J --> B
-    K --> B
+    C -->|5 - Predict New Point| N[User enters 4 feature values]
+    N --> O[Create DataPoint]
+    O --> P{Is Final Model Trained?}
+    P -->|Yes| Q1[PredictionService.predictNewPoint]
+    P -->|No| Q2[Manual KNNClassifier.fit & predict]
+    Q1 --> R[Print predicted class]
+    Q2 --> R
+    R --> B
 
-    C -->|5| L[KNNClassifier.fit on trainSet]
-    L --> M[Evaluator.calculateAccuracy on testSet]
-    M --> N[Print Accuracy]
-    N --> B
+    C -->|6 - Cross Validation| I[ModelSelector.findBestModel]
+    I --> J[Try all 54 configs with CrossValidator]
+    J --> K[Print each config accuracy]
+    K --> L[Print best config and full metrics]
+    L --> B
 
-    C -->|6| O[Read 4 feature values from user]
-    O --> P[Create new DataPoint]
-    P --> Q[KNNClassifier.fit on full dataset]
-    Q --> R[KNNClassifier.predict new point]
-    R --> S[Print predicted class]
-    S --> B
+    C -->|7 - Train Final Model| M[PredictionService.trainFinalModel]
+    M --> B
 
-    C -->|7| T([Exit])
+    C -->|8 - Exit| S([Exit])
+```
+
+---
+
+## How Data Flows Through the Project
+
+```
+iris.csv
+   ↓
+CSVLoader → DataSet (150 DataPoints)
+   ↓
+ModelSelector
+   ↓ tries 54 combinations of K, distance, scaler, weighted
+CrossValidator (5-Fold)
+   ↓ for each fold: trains KNNClassifier, checks accuracy
+Evaluator → prints confusion matrix, precision, recall, F1
+   ↓
+Best ModelConfig
+   ↓
+PredictionService → trains on ALL 150 points → ready to predict new data
 ```

@@ -2,109 +2,92 @@
 #include <iostream>
 #include <iomanip>
 #include <set>
+using namespace std;
 
-double Evaluator::calculateAccuracy(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const {
-    if (actual.empty() || actual.size() != predicted.size()) return 0.0;
-    
+double Evaluator::calculateAccuracy(vector<string> actual, vector<string> predicted) {
     int correct = 0;
-    for (size_t i = 0; i < actual.size(); ++i) {
+    for (int i = 0; i < actual.size(); i++) {
         if (actual[i] == predicted[i]) {
             correct++;
         }
     }
-    
-    return static_cast<double>(correct) / actual.size();
+    return (double)correct / actual.size();
 }
 
-void Evaluator::printConfusionMatrix(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const {
-    if (actual.empty() || actual.size() != predicted.size()) return;
+void Evaluator::printConfusionMatrix(vector<string> actual, vector<string> predicted) {
+    set<string> classes;
+    for (string l : actual) classes.insert(l);
+    for (string l : predicted) classes.insert(l);
 
-    std::set<std::string> classes;
-    for (const auto& l : actual) classes.insert(l);
-    for (const auto& l : predicted) classes.insert(l);
-
-    std::map<std::string, std::map<std::string, int>> matrix;
-    for (size_t i = 0; i < actual.size(); ++i) {
+    map<string, map<string, int>> matrix;
+    for (int i = 0; i < actual.size(); i++) {
         matrix[actual[i]][predicted[i]]++;
     }
 
-    std::cout << "\nConfusion Matrix (Rows: Actual, Cols: Predicted):\n";
-    std::cout << std::setw(15) << "";
-    for (const auto& c : classes) {
-        std::cout << std::setw(15) << c;
+    cout << "\nConfusion Matrix (Rows = Actual, Cols = Predicted):\n";
+    cout << setw(15) << "";
+    for (string c : classes) {
+        cout << setw(15) << c;
     }
-    std::cout << "\n";
+    cout << "\n";
 
-    for (const auto& actualClass : classes) {
-        std::cout << std::setw(15) << actualClass;
-        for (const auto& predictedClass : classes) {
-            std::cout << std::setw(15) << matrix[actualClass][predictedClass];
+    for (string actualClass : classes) {
+        cout << setw(15) << actualClass;
+        for (string predictedClass : classes) {
+            cout << setw(15) << matrix[actualClass][predictedClass];
         }
-        std::cout << "\n";
+        cout << "\n";
     }
-    std::cout << "\n";
+    cout << "\n";
 }
 
-// Precision = TP / (TP + FP)
-// TP: we predicted this class AND it was correct
-// FP: we predicted this class BUT it was wrong
-void Evaluator::printPrecision(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const {
-    if (actual.empty() || actual.size() != predicted.size()) return;
+void Evaluator::printPrecision(vector<string> actual, vector<string> predicted) {
+    set<string> classes;
+    for (string l : actual) classes.insert(l);
 
-    std::set<std::string> classes;
-    for (const auto& l : actual) classes.insert(l);
-
-    std::cout << "\nPrecision per class:\n";
-    for (const std::string& cls : classes) {
+    cout << "\nPrecision per class:\n";
+    for (string cls : classes) {
         int tp = 0, fp = 0;
-        for (size_t i = 0; i < actual.size(); ++i) {
-            if (predicted[i] == cls && actual[i] == cls)  tp++;  // correctly predicted as this class
-            if (predicted[i] == cls && actual[i] != cls)  fp++;  // wrongly predicted as this class
+        for (int i = 0; i < actual.size(); i++) {
+            if (predicted[i] == cls && actual[i] == cls) tp++;
+            if (predicted[i] == cls && actual[i] != cls) fp++;
         }
-        double precision = (tp + fp == 0) ? 0.0 : static_cast<double>(tp) / (tp + fp);
-        std::cout << "  " << cls << ": " << std::fixed << std::setprecision(2) << (precision * 100.0) << "%\n";
+        double precision = (tp + fp == 0) ? 0.0 : (double)tp / (tp + fp);
+        cout << "  " << cls << ": " << fixed << setprecision(2) << (precision * 100.0) << "%\n";
     }
 }
 
-// Recall = TP / (TP + FN)
-// TP: we predicted this class AND it was correct
-// FN: the actual class was this class BUT we predicted something else
-void Evaluator::printRecall(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const {
-    if (actual.empty() || actual.size() != predicted.size()) return;
+void Evaluator::printRecall(vector<string> actual, vector<string> predicted) {
+    set<string> classes;
+    for (string l : actual) classes.insert(l);
 
-    std::set<std::string> classes;
-    for (const auto& l : actual) classes.insert(l);
-
-    std::cout << "\nRecall per class:\n";
-    for (const std::string& cls : classes) {
+    cout << "\nRecall per class:\n";
+    for (string cls : classes) {
         int tp = 0, fn = 0;
-        for (size_t i = 0; i < actual.size(); ++i) {
-            if (actual[i] == cls && predicted[i] == cls)  tp++;  // correctly predicted
-            if (actual[i] == cls && predicted[i] != cls)  fn++;  // missed this class
+        for (int i = 0; i < actual.size(); i++) {
+            if (actual[i] == cls && predicted[i] == cls) tp++;
+            if (actual[i] == cls && predicted[i] != cls) fn++;
         }
-        double recall = (tp + fn == 0) ? 0.0 : static_cast<double>(tp) / (tp + fn);
-        std::cout << "  " << cls << ": " << std::fixed << std::setprecision(2) << (recall * 100.0) << "%\n";
+        double recall = (tp + fn == 0) ? 0.0 : (double)tp / (tp + fn);
+        cout << "  " << cls << ": " << fixed << setprecision(2) << (recall * 100.0) << "%\n";
     }
 }
 
-// F1 Score = 2 * (Precision * Recall) / (Precision + Recall)
-void Evaluator::printF1Score(const std::vector<std::string>& actual, const std::vector<std::string>& predicted) const {
-    if (actual.empty() || actual.size() != predicted.size()) return;
+void Evaluator::printF1Score(vector<string> actual, vector<string> predicted) {
+    set<string> classes;
+    for (string l : actual) classes.insert(l);
 
-    std::set<std::string> classes;
-    for (const auto& l : actual) classes.insert(l);
-
-    std::cout << "\nF1 Score per class:\n";
-    for (const std::string& cls : classes) {
+    cout << "\nF1 Score per class:\n";
+    for (string cls : classes) {
         int tp = 0, fp = 0, fn = 0;
-        for (size_t i = 0; i < actual.size(); ++i) {
-            if (predicted[i] == cls && actual[i] == cls)  tp++;
-            if (predicted[i] == cls && actual[i] != cls)  fp++;
-            if (actual[i] == cls && predicted[i] != cls)  fn++;
+        for (int i = 0; i < actual.size(); i++) {
+            if (predicted[i] == cls && actual[i] == cls) tp++;
+            if (predicted[i] == cls && actual[i] != cls) fp++;
+            if (actual[i] == cls && predicted[i] != cls) fn++;
         }
-        double precision = (tp + fp == 0) ? 0.0 : static_cast<double>(tp) / (tp + fp);
-        double recall    = (tp + fn == 0) ? 0.0 : static_cast<double>(tp) / (tp + fn);
+        double precision = (tp + fp == 0) ? 0.0 : (double)tp / (tp + fp);
+        double recall = (tp + fn == 0) ? 0.0 : (double)tp / (tp + fn);
         double f1 = (precision + recall == 0.0) ? 0.0 : 2.0 * (precision * recall) / (precision + recall);
-        std::cout << "  " << cls << ": " << std::fixed << std::setprecision(2) << (f1 * 100.0) << "%\n";
+        cout << "  " << cls << ": " << fixed << setprecision(2) << (f1 * 100.0) << "%\n";
     }
 }

@@ -1,11 +1,17 @@
 #include "DataPoint.h"
+#include <vector>
+#include <string>
+using namespace std;
 
-DataPoint::DataPoint(const std::vector<double>& f, const std::string& l) : features(f), label(l) {}
+DataPoint::DataPoint(vector<double> f, string l) {
+    features = f;
+    label = l;
+}
 
-const std::vector<double>& DataPoint::getFeatures() const {
+vector<double> DataPoint::getFeatures() {
     return features;
 }
 
-std::string DataPoint::getLabel() const {
+string DataPoint::getLabel() {
     return label;
 }

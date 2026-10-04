@@ -4,8 +4,6 @@
 #include "KNNClassifier.h"
 #include "IScaler.h"
 
-// Problem: Trains final model and makes predictions on new user input
-// Used by: main.cpp
 class PredictionService {
 private:
     ModelConfig config;
@@ -17,8 +15,8 @@ private:
 public:
     PredictionService();
     ~PredictionService();
-    void trainFinalModel(const DataSet& allData, const ModelConfig& bestConfig);
-    std::string predictNewPoint(const DataPoint& point) const;
-    bool getIsTrained() const;
-    ModelConfig getConfig() const;
+    void trainFinalModel(DataSet allData, ModelConfig bestConfig);
+    std::string predictNewPoint(DataPoint point);
+    bool getIsTrained();
+    ModelConfig getConfig();
 };
