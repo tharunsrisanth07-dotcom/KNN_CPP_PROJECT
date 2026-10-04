@@ -19,7 +19,7 @@ This is a K-Nearest Neighbours (KNN) classifier built from scratch in C++. We us
 
 ## Project Structure
 
-All files are in the root folder for simplicity.
+Header files (`.h`) are in the `include/` folder and implementation files (`.cpp`) are in the `src/` folder.
 
 | File | What it does |
 |------|-------------|
@@ -57,7 +57,7 @@ We split it 80% training (120 samples) and 20% testing (30 samples).
 Make sure you are in the project folder, then run:
 
 ```
-g++ *.cpp -o miniknn
+g++ -Iinclude main.cpp src/*.cpp -o miniknn
 ```
 
 Or just use:
