@@ -42,7 +42,6 @@ DataPoint
   - label : string
   + getFeatures()
   + getLabel()
-  + distanceTo(other)
 
 DataSet
   - points : vector<DataPoint>
