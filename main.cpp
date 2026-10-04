@@ -41,16 +41,14 @@ int main() {
         }
 
         if (choice == 1) {
-            std::string filename;
-            std::cout << "Enter dataset filename (e.g., data/iris.csv): ";
-            std::cin >> filename;
+            std::string filename = "data/iris.csv";  // hardcoded - no need to type
             CSVLoader loader;
             mainDataset = loader.load(filename);
             if (mainDataset.size() > 0) {
-                std::cout << "Dataset loaded successfully with " << mainDataset.size() << " points.\n";
+                std::cout << "Loaded " << filename << " — " << mainDataset.size() << " points.\n";
                 datasetLoaded = true;
             } else {
-                std::cout << "Failed to load dataset or dataset is empty.\n";
+                std::cout << "Failed to load " << filename << ". Make sure the file exists.\n";
             }
 
         } else if (choice == 2) {
