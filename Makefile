@@ -1,32 +1,10 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -Wextra -O2 -Iinclude
+CXXFLAGS = -std=c++17 -Iinclude
 
-SRCS = src/DataPoint.cpp \
-       src/DataSet.cpp \
-       src/CSVLoader.cpp \
-       src/EuclideanDistance.cpp \
-       src/ManhattanDistance.cpp \
-       src/MinkowskiDistance.cpp \
-       src/StandardScaler.cpp \
-       src/MinMaxScaler.cpp \
-       src/KNNClassifier.cpp \
-       src/Evaluator.cpp \
-       src/CrossValidator.cpp \
-       src/ModelSelector.cpp \
-       src/PredictionService.cpp \
-       main.cpp
+SRCS = $(wildcard src/*.cpp) main.cpp
 
-OBJS = $(SRCS:.cpp=.o)
-
-TARGET = miniknn
-
-all: $(TARGET)
-
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+all:
+	$(CXX) $(CXXFLAGS) $(SRCS) -o miniknn
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f miniknn
