@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <limits>
 using namespace std;
 
 void displayMenu(int k, string dist, double p, bool weighted, string scaler) {
@@ -58,6 +59,13 @@ int main() {
     while (true) {
         displayMenu(manualK, manualDistance, manualP, manualWeighted, manualScaler);
         cin >> choice;
+
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input, try again.\n";
+            continue;
+        }
 
         if (choice == 1) {
             string filename = "data/iris.csv";
@@ -145,6 +153,10 @@ int main() {
                 cout << "Enter 4 feature values (example: 5.1 3.5 1.4 0.2): \n";
                 double f1, f2, f3, f4;
                 cin >> f1 >> f2 >> f3 >> f4;
+
+                // Clear any extra input (like a 5th feature) to avoid messing up the next menu prompt
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 vector<double> features = {f1, f2, f3, f4};
                 DataPoint newPoint(features, "Unknown");
                 string prediction = "";
