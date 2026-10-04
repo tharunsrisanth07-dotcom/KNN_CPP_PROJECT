@@ -10,6 +10,7 @@
 #include <string>
 #include <iomanip>
 #include <limits>
+#include <sstream>
 using namespace std;
 
 void displayMenu(int k, string dist, double p, bool weighted, string scaler) {
@@ -161,13 +162,28 @@ int main() {
                 cout << "Load the dataset first (Option 1).\n";
             } else {
                 cout << "Enter 4 feature values (example: 5.1 3.5 1.4 0.2): \n";
-                double f1, f2, f3, f4;
-                cin >> f1 >> f2 >> f3 >> f4;
+                cin >> ws; // clear leading whitespace
+                string inputLine;
+                getline(cin, inputLine);
 
-                // Clear any extra input (like a 5th feature) to avoid messing up the next menu prompt
-                cin.clear();
-                cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                vector<double> features = {f1, f2, f3, f4};
+                stringstream ss(inputLine);
+                double val;
+                vector<double> features;
+                while (ss >> val) {
+                    features.push_back(val);
+                }
+
+                if (!ss.eof() && ss.fail()) {
+                    // Check if there was non-numeric input before end of string
+                    cout << "Invalid input! Please enter only numbers.\n";
+                    continue;
+                }
+
+                if (features.size() != 4) {
+                    cout << "Invalid input! You must enter exactly 4 features.\n";
+                    continue;
+                }
+
                 DataPoint newPoint(features, "Unknown");
                 string prediction = "";
                 
