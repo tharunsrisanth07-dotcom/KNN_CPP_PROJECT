@@ -12,9 +12,8 @@ all:
 	g++ -std=c++17 -Iinclude -c src/Evaluator.cpp -o build/Evaluator.o
 	g++ -std=c++17 -Iinclude -c src/CrossValidator.cpp -o build/CrossValidator.o
 	g++ -std=c++17 -Iinclude -c src/ModelSelector.cpp -o build/ModelSelector.o
-	g++ -std=c++17 -Iinclude -c src/PredictionService.cpp -o build/PredictionService.o
 	g++ -std=c++17 -Iinclude -c main.cpp -o build/main.o
-	g++ build/DataPoint.o build/DataSet.o build/CSVLoader.o build/EuclideanDistance.o build/ManhattanDistance.o build/MinkowskiDistance.o build/StandardScaler.o build/MinMaxScaler.o build/KNNClassifier.o build/Evaluator.o build/CrossValidator.o build/ModelSelector.o build/PredictionService.o build/main.o -o miniknn
+	g++ build/DataPoint.o build/DataSet.o build/CSVLoader.o build/EuclideanDistance.o build/ManhattanDistance.o build/MinkowskiDistance.o build/StandardScaler.o build/MinMaxScaler.o build/KNNClassifier.o build/Evaluator.o build/CrossValidator.o build/ModelSelector.o build/main.o -o miniknn
 
 clean:
 	rm -rf build miniknn miniknn.exe

@@ -1,6 +1,6 @@
 #include "CSVLoader.h"
 #include "ModelSelector.h"
-#include "PredictionService.h"
+#include "KNNClassifier.h"
 #include "EuclideanDistance.h"
 #include "ManhattanDistance.h"
 #include "MinkowskiDistance.h"
@@ -47,7 +47,12 @@ int main() {
     // Automated configs
     ModelConfig bestConfig = {5, "euclidean", "standard", false};
     bool hasBestConfig = false;
-    PredictionService predictionService;
+    
+    // Final trained model state
+    bool finalModelTrained = false;
+    KNNClassifier* finalKNN = nullptr;
+    IDistance* finalDistance = nullptr;
+    IScaler* finalScaler = nullptr;
 
     int choice;
     while (true) {
@@ -144,9 +149,13 @@ int main() {
                 DataPoint newPoint(features, "Unknown");
                 string prediction = "";
                 
-                if (predictionService.getIsTrained()) {
+                if (finalModelTrained) {
                     cout << "\nUsing the automated Final Model from Cross Validation...\n";
-                    prediction = predictionService.predictNewPoint(newPoint);
+                    DataPoint processPoint = newPoint;
+                    if (finalScaler != nullptr) {
+                        processPoint = finalScaler->transform(newPoint);
+                    }
+                    prediction = finalKNN->predict(processPoint);
                 } else {
                     if (manualDistance == "minkowski") {
                         cout << "\nUsing Manual Model (K=" << manualK << ", Distance=" << manualDistance << ", p=" << manualP << ", " << (manualWeighted ? "Weighted" : "Normal") << ", Scaler=" << manualScaler << ")...\n";
@@ -211,7 +220,37 @@ int main() {
             } else if (!hasBestConfig) {
                 cout << "Run Cross Validation first (Option 8) to find the best config.\n";
             } else {
-                predictionService.trainFinalModel(mainDataset, bestConfig);
+                if (finalScaler != nullptr) { delete finalScaler; finalScaler = nullptr; }
+                if (finalDistance != nullptr) { delete finalDistance; finalDistance = nullptr; }
+                if (finalKNN != nullptr) { delete finalKNN; finalKNN = nullptr; }
+
+                DataSet trainingData = mainDataset;
+
+                if (bestConfig.scalerType == "standard") {
+                    finalScaler = new StandardScaler();
+                } else if (bestConfig.scalerType == "minmax") {
+                    finalScaler = new MinMaxScaler();
+                }
+
+                if (finalScaler != nullptr) {
+                    finalScaler->fit(trainingData);
+                    DataSet scaledTrain;
+                    for (int i = 0; i < trainingData.size(); i++) {
+                        scaledTrain.addPoint(finalScaler->transform(trainingData.getPoint(i)));
+                    }
+                    trainingData = scaledTrain;
+                }
+
+                if (bestConfig.distanceType == "euclidean") finalDistance = new EuclideanDistance();
+                else if (bestConfig.distanceType == "manhattan") finalDistance = new ManhattanDistance();
+                else if (bestConfig.distanceType == "minkowski") finalDistance = new MinkowskiDistance(3.0);
+                else finalDistance = new EuclideanDistance();
+
+                finalKNN = new KNNClassifier(bestConfig.k, finalDistance, bestConfig.weighted);
+                finalKNN->fit(trainingData);
+                finalModelTrained = true;
+
+                cout << "Model trained on all " << mainDataset.size() << " data points. Ready to predict!\n";
                 cout << "Final model trained! Option 7 will now use this optimized model automatically.\n";
             }
 
@@ -222,5 +261,11 @@ int main() {
             cout << "Invalid option, try again.\n";
         }
     }
+    
+    // Cleanup
+    if (finalScaler != nullptr) delete finalScaler;
+    if (finalDistance != nullptr) delete finalDistance;
+    if (finalKNN != nullptr) delete finalKNN;
+    
     return 0;
 }
