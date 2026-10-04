@@ -38,8 +38,7 @@ cpp/
 │   ├── CrossValidator.h
 │   ├── ModelConfig.h
 │   ├── ModelResult.h
-│   ├── ModelSelector.h
-│   └── PredictionService.h
+│   └── ModelSelector.h
 └── src/                  ← all .cpp implementation files
     ├── DataPoint.cpp
     ├── DataSet.cpp
@@ -52,8 +51,7 @@ cpp/
     ├── KNNClassifier.cpp
     ├── Evaluator.cpp
     ├── CrossValidator.cpp
-    ├── ModelSelector.cpp
-    └── PredictionService.cpp
+    └── ModelSelector.cpp
 ```
 
 ---
@@ -78,7 +76,6 @@ cpp/
 | `ModelConfig` | struct to store one set of hyperparameters |
 | `ModelResult` | struct to store CV results |
 | `ModelSelector` | tries all configs, picks the best one |
-| `PredictionService` | trains final model and predicts new points |
 
 ---
 
@@ -92,7 +89,7 @@ make
 
 **Windows (MinGW):**
 ```powershell
-g++ -std=c++17 -Iinclude src/DataPoint.cpp src/DataSet.cpp src/CSVLoader.cpp src/EuclideanDistance.cpp src/ManhattanDistance.cpp src/MinkowskiDistance.cpp src/StandardScaler.cpp src/MinMaxScaler.cpp src/KNNClassifier.cpp src/Evaluator.cpp src/CrossValidator.cpp src/ModelSelector.cpp src/PredictionService.cpp main.cpp -o miniknn
+g++ -std=c++17 -Iinclude src/DataPoint.cpp src/DataSet.cpp src/CSVLoader.cpp src/EuclideanDistance.cpp src/ManhattanDistance.cpp src/MinkowskiDistance.cpp src/StandardScaler.cpp src/MinMaxScaler.cpp src/KNNClassifier.cpp src/Evaluator.cpp src/CrossValidator.cpp src/ModelSelector.cpp main.cpp -o miniknn
 ./miniknn
 ```
 

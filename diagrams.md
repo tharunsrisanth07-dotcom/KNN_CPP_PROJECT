@@ -104,18 +104,6 @@ classDiagram
         + findBestModel(data: DataSet) ModelConfig
     }
 
-    class PredictionService {
-        - ModelConfig config
-        - IScaler* finalScaler
-        - IDistance* finalDistance
-        - KNNClassifier* finalKNN
-        - bool isTrained
-        + trainFinalModel(data: DataSet, config: ModelConfig) void
-        + predictNewPoint(point: DataPoint) string
-        + getIsTrained() bool
-        + getConfig() ModelConfig
-    }
-
     DataSet "1" o-- "many" DataPoint : contains
     CSVLoader --> DataSet : creates
 
@@ -138,9 +126,6 @@ classDiagram
     ModelSelector --> CrossValidator : calls evaluate
     ModelSelector --> ModelConfig : returns best
 
-    PredictionService --> KNNClassifier : owns
-    PredictionService --> IScaler : owns
-    PredictionService --> IDistance : owns
 ```
 
 ---
@@ -174,7 +159,7 @@ flowchart TD
     C -->|7 - Predict New Point| N[User enters 4 feature values]
     N --> O[Create DataPoint]
     O --> P{Is Final Model Trained?}
-    P -->|Yes| Q1[PredictionService.predictNewPoint]
+    P -->|Yes| Q1[Use automated Final Model]
     P -->|No| Q2[Manual KNNClassifier.fit & predict]
     Q1 --> R[Print predicted class]
     Q2 --> R
@@ -186,7 +171,7 @@ flowchart TD
     K --> L[Print best config and full metrics]
     L --> B
 
-    C -->|9 - Train Final Model| M[PredictionService.trainFinalModel]
+    C -->|9 - Train Final Model| M[Train final model in main.cpp]
     M --> B
 
     C -->|10 - Exit| S([Exit])
@@ -209,5 +194,5 @@ Evaluator → prints confusion matrix, precision, recall, F1
    ↓
 Best ModelConfig
    ↓
-PredictionService → trains on ALL 150 points → ready to predict new data
+main.cpp → trains on ALL 150 points → ready to predict new data
 ```
