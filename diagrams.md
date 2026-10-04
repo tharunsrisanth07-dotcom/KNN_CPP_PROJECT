@@ -165,7 +165,13 @@ flowchart TD
     C -->|4 - Select Distance| H[Read distance method from user]
     H --> B
 
-    C -->|5 - Predict New Point| N[User enters 4 feature values]
+    C -->|5 - Select Voting Method| V[Read Normal or Weighted from user]
+    V --> B
+
+    C -->|6 - Select Scaler Method| SC[Read none, standard, or minmax from user]
+    SC --> B
+
+    C -->|7 - Predict New Point| N[User enters 4 feature values]
     N --> O[Create DataPoint]
     O --> P{Is Final Model Trained?}
     P -->|Yes| Q1[PredictionService.predictNewPoint]
@@ -174,16 +180,16 @@ flowchart TD
     Q2 --> R
     R --> B
 
-    C -->|6 - Cross Validation| I[ModelSelector.findBestModel]
+    C -->|8 - Cross Validation| I[ModelSelector.findBestModel]
     I --> J[Try all 54 configs with CrossValidator]
     J --> K[Print each config accuracy]
     K --> L[Print best config and full metrics]
     L --> B
 
-    C -->|7 - Train Final Model| M[PredictionService.trainFinalModel]
+    C -->|9 - Train Final Model| M[PredictionService.trainFinalModel]
     M --> B
 
-    C -->|8 - Exit| S([Exit])
+    C -->|10 - Exit| S([Exit])
 ```
 
 ---

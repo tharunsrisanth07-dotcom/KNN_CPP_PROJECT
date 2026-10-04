@@ -105,10 +105,12 @@ g++ -std=c++17 -Iinclude src/DataPoint.cpp src/DataSet.cpp src/CSVLoader.cpp src
 2. View Dataset Info
 3. Select K
 4. Select Distance Method
-5. Predict a New Point
-6. Run Cross Validation & Select Best Model
-7. Train Final Model
-8. Exit
+5. Select Voting Method
+6. Select Scaler Method
+7. Predict a New Point
+8. Run Cross Validation & Select Best Model
+9. Train Final Model
+10. Exit
 ```
 
 ---

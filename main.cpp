@@ -4,12 +4,14 @@
 #include "EuclideanDistance.h"
 #include "ManhattanDistance.h"
 #include "MinkowskiDistance.h"
+#include "StandardScaler.h"
+#include "MinMaxScaler.h"
 #include <iostream>
 #include <string>
 #include <iomanip>
 using namespace std;
 
-void displayMenu(int k, string dist, double p) {
+void displayMenu(int k, string dist, double p, bool weighted, string scaler) {
     cout << "\n====================================\n";
     cout << "        Mini KNN Classifier\n";
     cout << "====================================\n";
@@ -21,10 +23,12 @@ void displayMenu(int k, string dist, double p) {
     } else {
         cout << "4. Select Distance Method (Current: " << dist << ")\n";
     }
-    cout << "5. Predict New Point\n";
-    cout << "6. Run Cross Validation & Select Best Model\n";
-    cout << "7. Train Final Model\n";
-    cout << "8. Exit\n";
+    cout << "5. Select Voting Method (Current: " << (weighted ? "Weighted" : "Normal") << ")\n";
+    cout << "6. Select Scaler Method (Current: " << scaler << ")\n";
+    cout << "7. Predict New Point\n";
+    cout << "8. Run Cross Validation & Select Best Model\n";
+    cout << "9. Train Final Model\n";
+    cout << "10. Exit\n";
     cout << "------------------------------------\n";
     cout << "Pick an option: ";
 }
@@ -37,6 +41,8 @@ int main() {
     int manualK = 5;
     string manualDistance = "euclidean";
     double manualP = 3.0;
+    bool manualWeighted = false;
+    string manualScaler = "none";
     
     // Automated configs
     ModelConfig bestConfig = {5, "euclidean", "standard", false};
@@ -45,7 +51,7 @@ int main() {
 
     int choice;
     while (true) {
-        displayMenu(manualK, manualDistance, manualP);
+        displayMenu(manualK, manualDistance, manualP, manualWeighted, manualScaler);
         cin >> choice;
 
         if (choice == 1) {
@@ -76,6 +82,7 @@ int main() {
                     cout << " => " << dp.getLabel() << "\n";
                 }
             }
+            
         } else if (choice == 3) {
             cout << "Enter new K value: ";
             cin >> manualK;
@@ -101,8 +108,32 @@ int main() {
                     }
                 }
             }
-
+            
         } else if (choice == 5) {
+            cout << "Available voting methods: 1 for Normal, 2 for Weighted\n";
+            cout << "Enter choice: ";
+            int voteChoice;
+            cin >> voteChoice;
+            if (voteChoice == 2) {
+                manualWeighted = true;
+                cout << "Voting method set to Weighted.\n";
+            } else {
+                manualWeighted = false;
+                cout << "Voting method set to Normal.\n";
+            }
+            
+        } else if (choice == 6) {
+            cout << "Available scalers: none, standard, minmax\n";
+            cout << "Enter scaler method: ";
+            cin >> manualScaler;
+            if (manualScaler != "none" && manualScaler != "standard" && manualScaler != "minmax") {
+                cout << "Invalid scaler, falling back to none.\n";
+                manualScaler = "none";
+            } else {
+                cout << "Scaler set to " << manualScaler << ".\n";
+            }
+
+        } else if (choice == 7) {
             if (!datasetLoaded) {
                 cout << "Load the dataset first (Option 1).\n";
             } else {
@@ -118,9 +149,9 @@ int main() {
                     prediction = predictionService.predictNewPoint(newPoint);
                 } else {
                     if (manualDistance == "minkowski") {
-                        cout << "\nUsing Manual Model (K=" << manualK << ", Distance=" << manualDistance << ", p=" << manualP << ")...\n";
+                        cout << "\nUsing Manual Model (K=" << manualK << ", Distance=" << manualDistance << ", p=" << manualP << ", " << (manualWeighted ? "Weighted" : "Normal") << ", Scaler=" << manualScaler << ")...\n";
                     } else {
-                        cout << "\nUsing Manual Model (K=" << manualK << ", Distance=" << manualDistance << ")...\n";
+                        cout << "\nUsing Manual Model (K=" << manualK << ", Distance=" << manualDistance << ", " << (manualWeighted ? "Weighted" : "Normal") << ", Scaler=" << manualScaler << ")...\n";
                     }
                     
                     IDistance* dist = nullptr;
@@ -128,16 +159,35 @@ int main() {
                     else if (manualDistance == "minkowski") dist = new MinkowskiDistance(manualP);
                     else dist = new EuclideanDistance();
                     
-                    KNNClassifier knn(manualK, dist, false);
-                    knn.fit(mainDataset);
-                    prediction = knn.predict(newPoint);
+                    IScaler* scaler = nullptr;
+                    if (manualScaler == "standard") scaler = new StandardScaler();
+                    else if (manualScaler == "minmax") scaler = new MinMaxScaler();
+
+                    DataSet trainData = mainDataset;
+                    DataPoint processPoint = newPoint;
+                    
+                    if (scaler != nullptr) {
+                        scaler->fit(trainData);
+                        DataSet scaledTrain;
+                        for (int i = 0; i < trainData.size(); i++) {
+                            scaledTrain.addPoint(scaler->transform(trainData.getPoint(i)));
+                        }
+                        trainData = scaledTrain;
+                        processPoint = scaler->transform(newPoint);
+                    }
+                    
+                    KNNClassifier knn(manualK, dist, manualWeighted);
+                    knn.fit(trainData);
+                    prediction = knn.predict(processPoint);
+                    
                     delete dist;
+                    if (scaler != nullptr) delete scaler;
                 }
                 
                 cout << "Predicted Class: " << prediction << "\n";
             }
             
-        } else if (choice == 6) {
+        } else if (choice == 8) {
             if (!datasetLoaded) {
                 cout << "Load the dataset first (Option 1).\n";
             } else {
@@ -148,22 +198,24 @@ int main() {
                 // Automatically update the menu to show the newly found best parameters
                 manualK = bestConfig.k;
                 manualDistance = bestConfig.distanceType;
+                manualWeighted = bestConfig.weighted;
+                manualScaler = bestConfig.scalerType;
                 if (manualDistance == "minkowski") {
                     manualP = 3.0; // Best model always uses p=3.0 during CV
                 }
             }
 
-        } else if (choice == 7) {
+        } else if (choice == 9) {
             if (!datasetLoaded) {
                 cout << "Load the dataset first (Option 1).\n";
             } else if (!hasBestConfig) {
-                cout << "Run Cross Validation first (Option 6) to find the best config.\n";
+                cout << "Run Cross Validation first (Option 8) to find the best config.\n";
             } else {
                 predictionService.trainFinalModel(mainDataset, bestConfig);
-                cout << "Final model trained! Option 5 will now use this optimized model automatically.\n";
+                cout << "Final model trained! Option 7 will now use this optimized model automatically.\n";
             }
 
-        } else if (choice == 8) {
+        } else if (choice == 10) {
             cout << "Bye\n";
             break;
         } else {
