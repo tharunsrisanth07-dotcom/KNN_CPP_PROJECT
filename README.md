@@ -32,15 +32,7 @@ Header files (`.h`) are in the `include/` folder and implementation files (`.cpp
 | `Evaluator.h / .cpp` | Tests the model and calculates accuracy |
 | `main.cpp` | Menu-based interface to run everything |
 
----
 
-## Diagrams and Flow
-
-The UML Class Diagram and Program Flowchart have been placed in a separate file for better readability.
-
-👉 **[View Diagrams here](diagrams.md)**
-
----
 
 ## Dataset
 
@@ -117,41 +109,3 @@ Enter Petal Width: 0.2
 Predicted Class: Iris-setosa
 ```
 
----
-
-## Design Decisions
-
-### Why IDistance (Interface)?
-Distance calculation is pluggable. `KNNClassifier` holds a `unique_ptr<IDistance>`, so switching between Euclidean and Manhattan doesn't change any algorithm logic.
-
-### Why loadCSV inside DataSet?
-The dataset is responsible for managing its own data, including how it loads from a file. This is simpler and keeps the class self-contained.
-
-### Why 80/20 split?
-150 samples → 120 training, 30 testing. Standard ML practice. Gives enough training data while keeping a fair test set.
-
-### Why shuffle before split?
-Iris CSV is sorted by class. Without shuffle, the test set would only contain one class and the results would be inaccurate.
-
----
-
-## Team Responsibilities
-
-| Member | Work |
-|--------|------|
-| Member 1 | DataPoint, DataSet classes |
-| Member 2 | IDistance, EuclideanDistance, ManhattanDistance |
-| Member 3 | KNNClassifier — fit and predict logic |
-| Member 4 | Evaluator, main.cpp, menu |
-
----
-
-## Possible Extensions (for Meet 2 discussion)
-
-| Extension | What it adds |
-|-----------|--------------|
-| Cross Validation | Split into N folds, test each fold, average accuracy |
-| Feature Scaling | Normalize features so large values don't dominate distance |
-| Weighted KNN | Closer neighbours get higher vote weight |
-| Multiple Datasets | Load any CSV, not just Iris |
-| Best K Finder | Loop K from 1 to 20, pick the K with highest accuracy |
